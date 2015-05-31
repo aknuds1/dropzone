@@ -7,7 +7,7 @@ module.exports = (grunt) ->
     sass:
       options:
         sourcemap: 'none'
-        
+
       default:
         files: [
           "dist/basic.css": "src/basic.scss"

@@ -24,16 +24,13 @@
 #
 ###
 
-
 noop = ->
-
 
 # The Emitter class provides the ability to call `.on()` on Dropzone to listen
 # to events.
 # It is strongly based on component's emitter class, and I removed the
 # functionality because of the dependency hell with different frameworks.
 class Emitter
-
   # Add an event listener for given event
   addEventListener: @::on
   on: (event, fn) ->
@@ -42,7 +39,6 @@ class Emitter
     @_callbacks[event] = [] unless @_callbacks[event]
     @_callbacks[event].push fn
     return @
-
 
   emit: (event, args...) ->
     @_callbacks = @_callbacks || {}
@@ -82,7 +78,6 @@ class Emitter
     return @
 
 class Dropzone extends Emitter
-
   # Exposing the emitter class, mainly for tests
   Emitter: Emitter
 
@@ -124,8 +119,6 @@ class Dropzone extends Emitter
     "maxfilesreached"
     "queuecomplete"
   ]
-
-
 
   defaultOptions:
     url: null
@@ -247,7 +240,6 @@ class Dropzone extends Emitter
     # You can use {{maxFiles}} here, which will be replaced by the option.
     dictMaxFilesExceeded: "You can not upload any more files."
 
-
     # If `done()` is called without argument the file is accepted
     # If you call it with an error message, the file is rejected
     # (This allows for asynchronous validation).
@@ -279,8 +271,6 @@ class Dropzone extends Emitter
       span.textContent = @options.dictFallbackMessage if span
 
       @element.appendChild @getFallbackForm()
-
-
 
     # Gets called to calculate the thumbnail dimensions.
     #
@@ -336,7 +326,6 @@ class Dropzone extends Emitter
 
       return info
 
-
     ###
     Those functions register themselves to the events on init and handle all
     the user interface specific stuff. Overwriting them won't break the upload
@@ -345,9 +334,6 @@ class Dropzone extends Emitter
     want to add an additional event handler, register it on the dropzone object
     and don't overwrite those options.
     ###
-
-
-
 
     # Those are self explanatory and simply concern the DragnDrop.
     drop: (e) -> @element.classList.remove "dz-drag-hover"
@@ -393,7 +379,6 @@ class Dropzone extends Emitter
               @removeFile file
 
         removeLink.addEventListener "click", removeFileEvent for removeLink in file.previewElement.querySelectorAll("[data-dz-remove]")
-
 
     # Called whenever a file is removed.
     removedfile: (file) ->
@@ -476,11 +461,10 @@ class Dropzone extends Emitter
     maxfilesexceeded: noop
 
     maxfilesreached: noop
-    
+
     queuecomplete: noop
 
     addedfiles: noop
-
 
     # This template will be chosen when a new file is dropped.
     previewTemplate:  """
@@ -514,7 +498,6 @@ class Dropzone extends Emitter
                         </div>
                       </div>
                       """
-
   # global utility
   extend = (target, objects...) ->
     for object in objects
@@ -582,9 +565,7 @@ class Dropzone extends Emitter
       else
         @clickableElements = Dropzone.getElements @options.clickable, "clickable"
 
-
     @init()
-
 
   # Returns all files that have been accepted
   getAcceptedFiles: -> file for file in @files when file.accepted
@@ -604,7 +585,6 @@ class Dropzone extends Emitter
 
   # Files that are either queued or uploading
   getActiveFiles: -> file for file in @files when file.status == Dropzone.UPLOADING or file.status == Dropzone.QUEUED
-
 
   init: ->
     # In case it isn't set already
@@ -642,7 +622,6 @@ class Dropzone extends Emitter
 
     @URL = window.URL ? window.webkitURL
 
-
     # Setup all event listeners on the Dropzone object itself.
     # They're not in @setupEventListeners() because they shouldn't be removed
     # again when the dropzone gets disabled.
@@ -659,7 +638,6 @@ class Dropzone extends Emitter
       if @getAddedFiles().length == 0 and @getUploadingFiles().length == 0 and @getQueuedFiles().length == 0
         # This needs to be deferred so that `queuecomplete` really triggers after `complete`
         setTimeout (=> @emit "queuecomplete"), 0
-
 
     noPropagation = (e) ->
       e.stopPropagation()
@@ -726,7 +704,6 @@ class Dropzone extends Emitter
     delete @element.dropzone
     Dropzone.instances.splice Dropzone.instances.indexOf(this), 1
 
-
   updateTotalUploadProgress: ->
     totalBytesSent = 0
     totalBytes = 0
@@ -772,7 +749,6 @@ class Dropzone extends Emitter
       @element.setAttribute "method", @options.method
     form ? fields
 
-
   # Returns the fallback elements if they exist already
   #
   # This code has to pass in IE7 :(
@@ -782,12 +758,10 @@ class Dropzone extends Emitter
     for tagName in [ "div", "form" ]
       return fallback if fallback = getFallback @element.getElementsByTagName tagName
 
-
   # Activates all listeners stored in @listeners
   setupEventListeners: ->
     for elementListeners in @listeners
       elementListeners.element.addEventListener event, listener, false for event, listener of elementListeners.events
-
 
   # Deactivates all listeners stored in @listeners
   removeEventListeners: ->
@@ -822,7 +796,6 @@ class Dropzone extends Emitter
 
     "<strong>#{selectedSize}</strong> #{selectedUnit}"
 
-
   # Adds or removes the `dz-max-files-reached` class from the form.
   _updateMaxFilesReachedClass: ->
     if @options.maxFiles? and @getAcceptedFiles().length >= @options.maxFiles
@@ -830,8 +803,6 @@ class Dropzone extends Emitter
       @element.classList.add "dz-max-files-reached"
     else
       @element.classList.remove "dz-max-files-reached"
-
-
 
   drop: (e) ->
     return unless e.dataTransfer
@@ -857,7 +828,6 @@ class Dropzone extends Emitter
     items = e.clipboardData.items
 
     @_addFilesFromItems items if items.length
-
 
   handleFiles: (files) ->
     @addFile file for file in files
@@ -893,8 +863,6 @@ class Dropzone extends Emitter
       return
 
     dirReader.readEntries entriesReader, (error) -> console?.log? error
-
-
 
   # If `done()` is called without argument the file is accepted
   # If you call it with an error message, the file is rejected
@@ -937,7 +905,6 @@ class Dropzone extends Emitter
         @enqueueFile file if @options.autoQueue # Will set .accepted = true
       @_updateMaxFilesReachedClass()
 
-
   # Wrapper for enqueueFile
   enqueueFiles: (files) -> @enqueueFile file for file in files; null
 
@@ -948,7 +915,6 @@ class Dropzone extends Emitter
         setTimeout (=> @processQueue()), 0 # Deferring the call
     else
       throw new Error "This file can't be queued because it has already been processed or was rejected."
-
 
   _thumbnailQueue: [ ]
   _processingThumbnail: no
@@ -964,7 +930,6 @@ class Dropzone extends Emitter
     @createThumbnail @_thumbnailQueue.shift(), =>
       @_processingThumbnail = no
       @_processThumbnailQueue()
-
 
   # Can be called by the user to remove a file
   removeFile: (file) ->
@@ -1023,11 +988,10 @@ class Dropzone extends Emitter
 
       @emit "thumbnail", file, thumbnail
       callback() if callback?
-      
+
     img.onerror = callback if callback?
 
     img.src = imageUrl
-
 
   # Goes through the queue and processes files if there aren't too many already.
   processQueue: ->
@@ -1051,10 +1015,8 @@ class Dropzone extends Emitter
         @processFile queuedFiles.shift()
         i++
 
-
   # Wrapper for `processFiles`
   processFile: (file) -> @processFiles [ file ]
-
 
   # Loads the file, then calls finishedLoading()
   processFiles: (files) ->
@@ -1068,10 +1030,7 @@ class Dropzone extends Emitter
 
     @uploadFiles files
 
-
-
   _getFilesWithXhr: (xhr) -> files = (file for file in @files when file.xhr == xhr)
-
 
   # Cancels the file upload and sets the status to CANCELED
   # **if** the file is actually being uploaded.
@@ -1101,6 +1060,10 @@ class Dropzone extends Emitter
   uploadFile: (file) -> @uploadFiles [ file ]
 
   uploadFiles: (files) ->
+    if @options.uploadFiles?
+      @options.uploadFiles(files)
+      return
+
     xhr = new XMLHttpRequest()
 
     # Put the xhr object in the file objects to be able to reference it later.
@@ -1113,13 +1076,11 @@ class Dropzone extends Emitter
     # Has to be after `.open()`. See https://github.com/enyo/dropzone/issues/179
     xhr.withCredentials = !!@options.withCredentials
 
-
     response = null
 
     handleError = =>
       for file in files
         @_errorProcessing files, response || @options.dictResponseError.replace("{{statusCode}}", xhr.status), xhr
-
 
     updateProgress = (e) =>
       if e?
@@ -1195,7 +1156,6 @@ class Dropzone extends Emitter
     @emit "sending", file, xhr, formData for file in files
     @emit "sendingmultiple", files, xhr, formData if @options.uploadMultiple
 
-
     # Take care of other input elements
     if @element.tagName == "FORM"
       for input in @element.querySelectorAll "input, textarea, select, button"
@@ -1215,7 +1175,6 @@ class Dropzone extends Emitter
     formData.append @_getParamName(i), files[i], files[i].name for i in [0..files.length-1]
 
     xhr.send formData
-
 
   # Called internally when processing is finished.
   # Individual callbacks have to be called in the appropriate sections.
@@ -1243,10 +1202,7 @@ class Dropzone extends Emitter
 
     @processQueue() if @options.autoProcessQueue
 
-
-
 Dropzone.version = "4.0.1"
-
 
 # This is a map of options for your different dropzones. Add configurations
 # to this object for your different dropzone elemens.
@@ -1264,12 +1220,10 @@ Dropzone.version = "4.0.1"
 #     <form action="/upload" id="my-dropzone-element-id" class="dropzone"></form>
 Dropzone.options = { }
 
-
 # Returns the options for an element or undefined if none available.
 Dropzone.optionsForElement = (element) ->
   # Get the `Dropzone.options.elementId` for this element if it exists
   if element.getAttribute("id") then Dropzone.options[camelize element.getAttribute "id"] else undefined
-
 
 # Holds a list of all dropzone instances
 Dropzone.instances = [ ]
@@ -1279,7 +1233,6 @@ Dropzone.forElement = (element) ->
   element = document.querySelector element if typeof element == "string"
   throw new Error "No Dropzone found for given element. This is probably because you're trying to access it before Dropzone had the time to initialize. Use the `init` option to setup any additional observers on your Dropzone." unless element?.dropzone?
   return element.dropzone
-
 
 # Set to false if you don't want Dropzone to automatically find and attach to .dropzone elements.
 Dropzone.autoDiscover = on
@@ -1301,8 +1254,6 @@ Dropzone.discover = ->
     # Create a dropzone unless auto discover has been disabled for specific element
     new Dropzone dropzone unless Dropzone.optionsForElement(dropzone) == false
 
-
-
 # Since the whole Drag'n'Drop API is pretty new, some browsers implement it,
 # but not correctly.
 # So I created a blacklist of userAgents. Yes, yes. Browser sniffing, I know.
@@ -1319,7 +1270,6 @@ Dropzone.blacklistedBrowsers = [
   /opera.*Macintosh.*version\/12/i
   # /MSIE\ 10/i
 ]
-
 
 # Checks if the browser is supported
 Dropzone.isBrowserSupported = ->
@@ -1339,9 +1289,6 @@ Dropzone.isBrowserSupported = ->
 
   capableBrowser
 
-
-
-
 # Returns an array without the rejected item
 without = (list, rejectedItem) -> item for item in list when item isnt rejectedItem
 
@@ -1360,8 +1307,6 @@ Dropzone.elementInside = (element, container) ->
   return yes while element = element.parentNode when element == container
   return no
 
-
-
 Dropzone.getElement = (el, name) ->
   if typeof el == "string"
     element = document.querySelector el
@@ -1369,7 +1314,6 @@ Dropzone.getElement = (el, name) ->
     element = el
   throw new Error "Invalid `#{name}` option provided. Please provide a CSS selector or a plain HTML element." unless element?
   return element
-
 
 Dropzone.getElements = (els, name) ->
   if els instanceof Array
@@ -1420,23 +1364,15 @@ Dropzone.isValidFile = (file, acceptedFiles) ->
 
   return no
 
-
 # Augment jQuery
 if jQuery?
   jQuery.fn.dropzone = (options) ->
     this.each -> new Dropzone this, options
 
-
-
-
 if module?
   module.exports = Dropzone
 else
   window.Dropzone = Dropzone
-
-
-
-
 
 # Dropzone file status codes
 Dropzone.ADDED = "added"
@@ -1452,10 +1388,6 @@ Dropzone.PROCESSING = Dropzone.UPLOADING # alias
 Dropzone.CANCELED = "canceled"
 Dropzone.ERROR = "error"
 Dropzone.SUCCESS = "success"
-
-
-
-
 
 ###
 
@@ -1498,13 +1430,6 @@ detectVerticalSquash = (img) ->
 drawImageIOSFix = (ctx, img, sx, sy, sw, sh, dx, dy, dw, dh) ->
   vertSquashRatio = detectVerticalSquash img
   ctx.drawImage img, sx, sy, sw, sh, dx, dy, dw, dh / vertSquashRatio
-
-
-
-
-
-
-
 
 ###
 # contentloaded.js
