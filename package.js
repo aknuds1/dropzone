@@ -8,7 +8,7 @@ Package.describe({
 Package.onUse(function(api) {
   api.versionsFrom('METEOR@1.1.0.2');
   api.use('coffeescript');
-  api.use('fourseven:scss');
+  api.use('fourseven:scss@3.1.1');
   api.addFiles([
       'src/basic.scss',
       'src/dropzone.scss',
