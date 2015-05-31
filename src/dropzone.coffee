@@ -245,7 +245,6 @@ class Dropzone extends Emitter
     # (This allows for asynchronous validation).
     accept: (file, done) -> done()
 
-
     # Called when dropzone initialized
     # You can add event listeners here
     init: -> noop
@@ -539,7 +538,8 @@ class Dropzone extends Emitter
 
     throw new Error "No URL provided." unless @options.url
 
-    throw new Error "You can't provide both 'acceptedFiles' and 'acceptedMimeTypes'. 'acceptedMimeTypes' is deprecated." if @options.acceptedFiles and @options.acceptedMimeTypes
+    throw new Error "You can't provide both 'acceptedFiles' and 'acceptedMimeTypes'. " \
+      "'acceptedMimeTypes' is deprecated." if @options.acceptedFiles and @options.acceptedMimeTypes
 
     # Backwards compatibility
     if @options.acceptedMimeTypes
@@ -552,7 +552,8 @@ class Dropzone extends Emitter
       # Remove the fallback
       fallback.parentNode.removeChild fallback
 
-    # Display previews in the previewsContainer element or the Dropzone element unless explicitly set to false
+    # Display previews in the previewsContainer element or the Dropzone element unless explicitly
+    # set to false
     if @options.previewsContainer != false
       if @options.previewsContainer
         @previewsContainer = Dropzone.getElement @options.previewsContainer, "previewsContainer"
@@ -584,14 +585,16 @@ class Dropzone extends Emitter
   getAddedFiles: -> @getFilesWithStatus Dropzone.ADDED
 
   # Files that are either queued or uploading
-  getActiveFiles: -> file for file in @files when file.status == Dropzone.UPLOADING or file.status == Dropzone.QUEUED
+  getActiveFiles: -> file for file in @files when file.status == Dropzone.UPLOADING or \
+    file.status == Dropzone.QUEUED
 
   init: ->
     # In case it isn't set already
     @element.setAttribute("enctype", "multipart/form-data") if @element.tagName == "form"
 
     if @element.classList.contains("dropzone") and !@element.querySelector(".dz-message")
-      @element.appendChild Dropzone.createElement """<div class="dz-default dz-message"><span>#{@options.dictDefaultMessage}</span></div>"""
+      @element.appendChild Dropzone.createElement """<div class="dz-default dz-message"><span>#{
+        @options.dictDefaultMessage}</span></div>"""
 
     if @clickableElements.length
       setupHiddenFileInput = =>
@@ -635,7 +638,8 @@ class Dropzone extends Emitter
 
     # Emit a `queuecomplete` event if all files finished uploading.
     @on "complete", (file) =>
-      if @getAddedFiles().length == 0 and @getUploadingFiles().length == 0 and @getQueuedFiles().length == 0
+      if @getAddedFiles().length == 0 and @getUploadingFiles().length == 0 and \
+          @getQueuedFiles().length == 0
         # This needs to be deferred so that `queuecomplete` really triggers after `complete`
         setTimeout (=> @emit "queuecomplete"), 0
 
@@ -686,7 +690,8 @@ class Dropzone extends Emitter
         events:
           "click": (evt) =>
             # Only the actual dropzone or the message element should trigger file selection
-            if (clickableElement != @element) or (evt.target == @element or Dropzone.elementInside evt.target, @element.querySelector ".dz-message")
+            if (clickableElement != @element) or (evt.target == @element or
+                Dropzone.elementInside evt.target, @element.querySelector ".dz-message")
               @hiddenFileInput.click() # Forward the click
 
 
@@ -730,18 +735,21 @@ class Dropzone extends Emitter
 
   # Returns a form that can be used as fallback if the browser does not support DragnDrop
   #
-  # If the dropzone is already a form, only the input field and button are returned. Otherwise a complete form element is provided.
+  # If the dropzone is already a form, only the input field and button are returned. Otherwise a
+  # complete form element is provided.
   # This code has to pass in IE7 :(
   getFallbackForm: ->
     return existingFallback if existingFallback = @getExistingFallback()
 
     fieldsString = """<div class="dz-fallback">"""
     fieldsString += """<p>#{@options.dictFallbackText}</p>""" if @options.dictFallbackText
-    fieldsString += """<input type="file" name="#{@_getParamName 0}" #{if @options.uploadMultiple then 'multiple="multiple"' } /><input type="submit" value="Upload!"></div>"""
+    fieldsString += """<input type="file" name="#{@_getParamName 0}" #{
+      if @options.uploadMultiple then 'multiple="multiple"' } /><input type="submit" value="Upload!"></div>"""
 
     fields = Dropzone.createElement fieldsString
     if @element.tagName isnt "FORM"
-      form = Dropzone.createElement("""<form action="#{@options.url}" enctype="multipart/form-data" method="#{@options.method}"></form>""")
+      form = Dropzone.createElement(
+        """<form action="#{@options.url}" enctype="multipart/form-data" method="#{@options.method}"></form>""")
       form.appendChild fields
     else
       # Make sure that the enctype and method attributes are set properly
@@ -761,12 +769,14 @@ class Dropzone extends Emitter
   # Activates all listeners stored in @listeners
   setupEventListeners: ->
     for elementListeners in @listeners
-      elementListeners.element.addEventListener event, listener, false for event, listener of elementListeners.events
+      elementListeners.element.addEventListener event, listener, false for event, listener of \
+        elementListeners.events
 
   # Deactivates all listeners stored in @listeners
   removeEventListeners: ->
     for elementListeners in @listeners
-      elementListeners.element.removeEventListener event, listener, false for event, listener of elementListeners.events
+      elementListeners.element.removeEventListener event, listener, false for event, listener of \
+        elementListeners.events
 
   # Removes all event listeners and cancels all files in the queue or being processed.
   disable: ->
@@ -872,7 +882,8 @@ class Dropzone extends Emitter
   # `acceptedFiles` check.
   accept: (file, done) ->
     if file.size > @options.maxFilesize * 1024 * 1024
-      done @options.dictFileTooBig.replace("{{filesize}}", Math.round(file.size / 1024 / 10.24) / 100).replace("{{maxFilesize}}", @options.maxFilesize)
+      done @options.dictFileTooBig.replace("{{filesize}}", Math.round(
+      file.size / 1024 / 10.24) / 100).replace("{{maxFilesize}}", @options.maxFilesize)
     else unless Dropzone.isValidFile file, @options.acceptedFiles
       done @options.dictInvalidFileType
     else if @options.maxFiles? and @getAcceptedFiles().length >= @options.maxFiles
@@ -1231,7 +1242,9 @@ Dropzone.instances = [ ]
 # Returns the dropzone for given element if any
 Dropzone.forElement = (element) ->
   element = document.querySelector element if typeof element == "string"
-  throw new Error "No Dropzone found for given element. This is probably because you're trying to access it before Dropzone had the time to initialize. Use the `init` option to setup any additional observers on your Dropzone." unless element?.dropzone?
+  throw new Error "No Dropzone found for given element. This is probably because you're trying to " \
+    "access it before Dropzone had the time to initialize. Use the `init` option to setup any " \
+    "additional observers on your Dropzone." unless element?.dropzone?
   return element.dropzone
 
 # Set to false if you don't want Dropzone to automatically find and attach to .dropzone elements.
