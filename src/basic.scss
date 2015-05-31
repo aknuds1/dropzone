@@ -24,8 +24,8 @@
 .dropzone, .dropzone * {
   box-sizing: border-box;
 }
-.dropzone {
 
+.dropzone {
   position: relative;
 
   .dz-preview {
@@ -38,6 +38,7 @@
       display: block;
       height: 15px;
       border: 1px solid #aaa;
+
       .dz-upload {
         display: block;
         height: 100%;
@@ -49,16 +50,6 @@
     .dz-error-message {
       color: red;
       display: none;
-    }
-    &.dz-error {
-      .dz-error-message, .dz-error-mark {
-        display: block;
-      }
-    }
-    &.dz-success {
-      .dz-success-mark {
-        display: block;
-      }
     }
 
     .dz-error-mark, .dz-success-mark {
@@ -72,7 +63,16 @@
       margin-left: -(54px/2);
     }
 
+    &.dz-error {
+      .dz-error-message, .dz-error-mark {
+        display: block;
+      }
+    }
 
+    &.dz-success {
+      .dz-success-mark {
+        display: block;
+      }
+    }
   }
-
 }

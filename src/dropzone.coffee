@@ -129,7 +129,8 @@ class Dropzone extends Emitter
     maxFilesize: 256 # in MB
     paramName: "file" # The name of the file param that gets transferred.
     createImageThumbnails: true
-    maxThumbnailFilesize: 10 # in MB. When the filename exceeds this limit, the thumbnail will not be generated.
+    # in MB. When the filename exceeds this limit, the thumbnail will not be generated.
+    maxThumbnailFilesize: 10
     thumbnailWidth: 120
     thumbnailHeight: 120
 
