@@ -538,7 +538,7 @@ class Dropzone extends Emitter
 
     throw new Error "No URL provided." unless @options.url
 
-    throw new Error "You can't provide both 'acceptedFiles' and 'acceptedMimeTypes'. " \
+    throw new Error "You can't provide both 'acceptedFiles' and 'acceptedMimeTypes'. " +
       "'acceptedMimeTypes' is deprecated." if @options.acceptedFiles and @options.acceptedMimeTypes
 
     # Backwards compatibility
@@ -744,7 +744,7 @@ class Dropzone extends Emitter
     fieldsString = """<div class="dz-fallback">"""
     fieldsString += """<p>#{@options.dictFallbackText}</p>""" if @options.dictFallbackText
     fieldsString += """<input type="file" name="#{@_getParamName 0}" #{
-      if @options.uploadMultiple then 'multiple="multiple"' } /><input type="submit" value="Upload!"></div>"""
+      if @options.uploadMultiple then 'multiple="multiple"'} /><input type="submit" value="Upload!"></div>"""
 
     fields = Dropzone.createElement fieldsString
     if @element.tagName isnt "FORM"
@@ -791,7 +791,7 @@ class Dropzone extends Emitter
 
   # Returns a nicely formatted filesize
   filesize: (size) ->
-    units = [ 'TB', 'GB', 'MB', 'KB', 'b' ]
+    units = ['TB', 'GB', 'MB', 'KB', 'b']
     selectedSize = selectedUnit = null
 
     for unit, i in units
@@ -828,7 +828,7 @@ class Dropzone extends Emitter
         # The browser supports dropping of folders, so handle items instead of files
         @_addFilesFromItems items
       else
-        @handleFiles files
+        @addFile file for file in files
     return
 
   paste: (e) ->
@@ -838,9 +838,6 @@ class Dropzone extends Emitter
     items = e.clipboardData.items
 
     @_addFilesFromItems items if items.length
-
-  handleFiles: (files) ->
-    @addFile file for file in files
 
   # When a folder is dropped (or files are pasted), items must be handled
   # instead of files.
@@ -855,7 +852,6 @@ class Dropzone extends Emitter
       else if item.getAsFile?
         if !item.kind? or item.kind == "file"
           @addFile item.getAsFile()
-
 
   # Goes through the directory, and adds each file it finds recursively
   _addFilesFromDirectory: (directory, path) ->
@@ -883,7 +879,7 @@ class Dropzone extends Emitter
   accept: (file, done) ->
     if file.size > @options.maxFilesize * 1024 * 1024
       done @options.dictFileTooBig.replace("{{filesize}}", Math.round(
-      file.size / 1024 / 10.24) / 100).replace("{{maxFilesize}}", @options.maxFilesize)
+        file.size / 1024 / 10.24) / 100).replace("{{maxFilesize}}", @options.maxFilesize)
     else unless Dropzone.isValidFile file, @options.acceptedFiles
       done @options.dictInvalidFileType
     else if @options.maxFiles? and @getAcceptedFiles().length >= @options.maxFiles
@@ -930,7 +926,8 @@ class Dropzone extends Emitter
   _thumbnailQueue: [ ]
   _processingThumbnail: no
   _enqueueThumbnail: (file) ->
-    if @options.createImageThumbnails and file.type.match(/image.*/) and file.size <= @options.maxThumbnailFilesize * 1024 * 1024
+    if @options.createImageThumbnails and file.type.match(/image.*/) and file.size <= \
+        @options.maxThumbnailFilesize * 1024 * 1024
       @_thumbnailQueue.push(file)
       setTimeout (=> @_processThumbnailQueue()), 0 # Deferring the call
 
@@ -969,11 +966,11 @@ class Dropzone extends Emitter
         callback() if callback?
         return
 
-      @createThumbnailFromUrl file, fileReader.result, callback
+      @_createThumbnailFromUrl file, fileReader.result, callback
 
     fileReader.readAsDataURL file
 
-  createThumbnailFromUrl: (file, imageUrl, callback) ->
+  _createThumbnailFromUrl: (file, imageUrl, callback) ->
     # Not using `new Image` here because of a bug in latest Chrome versions.
     # See https://github.com/enyo/dropzone/pull/226
     img = document.createElement "img"
@@ -993,7 +990,9 @@ class Dropzone extends Emitter
       canvas.height = resizeInfo.trgHeight
 
       # This is a bugfix for iOS' scaling bug.
-      drawImageIOSFix ctx, img, resizeInfo.srcX ? 0, resizeInfo.srcY ? 0, resizeInfo.srcWidth, resizeInfo.srcHeight, resizeInfo.trgX ? 0, resizeInfo.trgY ? 0, resizeInfo.trgWidth, resizeInfo.trgHeight
+      drawImageIOSFix ctx, img, resizeInfo.srcX ? 0, resizeInfo.srcY ? 0, resizeInfo.srcWidth, \
+        resizeInfo.srcHeight, resizeInfo.trgX ? 0, resizeInfo.trgY ? 0, resizeInfo.trgWidth, \
+        resizeInfo.trgHeight
 
       thumbnail = canvas.toDataURL "image/png"
 
@@ -1242,8 +1241,8 @@ Dropzone.instances = [ ]
 # Returns the dropzone for given element if any
 Dropzone.forElement = (element) ->
   element = document.querySelector element if typeof element == "string"
-  throw new Error "No Dropzone found for given element. This is probably because you're trying to " \
-    "access it before Dropzone had the time to initialize. Use the `init` option to setup any " \
+  throw new Error "No Dropzone found for given element. This is probably because you're trying to " +
+    "access it before Dropzone had the time to initialize. Use the `init` option to setup any " +
     "additional observers on your Dropzone." unless element?.dropzone?
   return element.dropzone
 
