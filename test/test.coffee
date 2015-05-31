@@ -1,8 +1,6 @@
 chai.should()
 
 describe "Dropzone", ->
-
-
   getMockFile = ->
     status: Dropzone.ADDED
     accepted: true
@@ -10,15 +8,12 @@ describe "Dropzone", ->
     size: 123456
     type: "text/html"
 
-
   xhr = null
   beforeEach -> xhr = sinon.useFakeXMLHttpRequest()
 
   describe "Emitter", ->
-
     emitter = null
     beforeEach -> emitter = new Dropzone::Emitter()
-
 
     it ".on() should return the object itself", ->
       (emitter.on "test", ->).should.equal emitter
@@ -83,7 +78,6 @@ describe "Dropzone", ->
       callCount2.should.equal 1
 
     describe ".off()", ->
-
       callback1 = ->
       callback2 = ->
       callback3 = ->
@@ -126,13 +120,8 @@ describe "Dropzone", ->
         emitter._callbacks["test3"][0].should.equal callback1
         emt.should.equal emitter
 
-
-
-
   describe "static functions", ->
-
     describe "Dropzone.createElement()", ->
-
       element = Dropzone.createElement """<div class="test"><span>Hallo</span></div>"""
 
       it "should properly create an element from a string", ->
@@ -203,7 +192,10 @@ describe "Dropzone", ->
         document.body.removeChild element
 
       it "should throw an exception if no dropzone attached", ->
-        expect(-> Dropzone.forElement document.createElement "div").to.throw "No Dropzone found for given element. This is probably because you're trying to access it before Dropzone had the time to initialize. Use the `init` option to setup any additional observers on your Dropzone."
+        expect(-> Dropzone.forElement document.createElement "div").to.throw \
+          "No Dropzone found for given element. This is probably because you're trying to " +
+            "access it before Dropzone had the time to initialize. Use the `init` option to " +
+            "setup any additional observers on your Dropzone."
 
       it "should accept css selectors", ->
         expect(Dropzone.forElement "#some-test-element").to.equal dropzone
@@ -355,7 +347,8 @@ describe "Dropzone", ->
         el = Dropzone.getElement tmpElements[2]
         el.should.equal tmpElements[2]
       it "should fail if invalid selector", ->
-        errorMessage = "Invalid `clickable` option provided. Please provide a CSS selector or a plain HTML element."
+        errorMessage = "Invalid `clickable` option provided. Please provide a CSS selector or a " +
+          "plain HTML element."
         expect(-> Dropzone.getElement "lblasdlfsfl", "clickable").to.throw errorMessage
         expect(-> Dropzone.getElement { "lblasdlfsfl" }, "clickable").to.throw errorMessage
         expect(-> Dropzone.getElement [ "lblasdlfsfl" ], "clickable").to.throw errorMessage
@@ -377,7 +370,8 @@ describe "Dropzone", ->
         els = Dropzone.getElements tmpElements[1]
         els.should.eql [ tmpElements[1] ]
       it "should fail if invalid selector", ->
-        errorMessage = "Invalid `clickable` option provided. Please provide a CSS selector, a plain HTML element or a list of those."
+        errorMessage = "Invalid `clickable` option provided. Please provide a CSS selector, a " +
+          "plain HTML element or a list of those."
         expect(-> Dropzone.getElements "lblasdlfsfl", "clickable").to.throw errorMessage
         expect(-> Dropzone.getElements [ "lblasdlfsfl" ], "clickable").to.throw errorMessage
 
@@ -397,7 +391,9 @@ describe "Dropzone", ->
 
     it "should throw an exception if both acceptedFiles and acceptedMimeTypes are specified", ->
       element = document.createElement "div"
-      expect(-> dropzone = new Dropzone element, url: "test", acceptedFiles: "param", acceptedMimeTypes: "types").to.throw "You can't provide both 'acceptedFiles' and 'acceptedMimeTypes'. 'acceptedMimeTypes' is deprecated."
+      expect(-> dropzone = new Dropzone element, url: "test", acceptedFiles: "param", \
+        acceptedMimeTypes: "types").to.throw "You can't provide both 'acceptedFiles' and " +
+          "'acceptedMimeTypes'. 'acceptedMimeTypes' is deprecated."
 
     it "should set itself as element.dropzone", ->
       element = document.createElement "div"
@@ -410,7 +406,8 @@ describe "Dropzone", ->
       Dropzone.instances[Dropzone.instances.length - 1].should.equal dropzone
 
     it "should use the action attribute not the element with the name action", ->
-      element = Dropzone.createElement """<form action="real-action"><input type="hidden" name="action" value="wrong-action" /></form>"""
+      element = Dropzone.createElement \
+        """<form action="real-action"><input type="hidden" name="action" value="wrong-action" /></form>"""
       dropzone = new Dropzone element
       dropzone.options.url.should.equal "real-action"
 
@@ -474,22 +471,22 @@ describe "Dropzone", ->
           dropzone = new Dropzone element, clickable: [ document.body, ".some-clickable" ]
           dropzone.clickableElements.should.eql [ document.body, clickableElement ]
         it "should throw an exception if the element is invalid", ->
-          expect(-> dropzone = new Dropzone element, clickable: ".some-invalid-clickable").to.throw "Invalid `clickable` option provided. Please provide a CSS selector, a plain HTML element or a list of those."
-
-
-
+          expect(-> dropzone = new Dropzone element, clickable: ".some-invalid-clickable").to.throw \
+            "Invalid `clickable` option provided. Please provide a CSS selector, a plain HTML element or a list of those."
 
   describe "init()", ->
     describe "clickable", ->
-
       dropzones =
-        "using acceptedFiles": new Dropzone(Dropzone.createElement("""<form action="/"></form>"""), { clickable: yes, acceptedFiles: "audio/*,video/*" })
-        "using acceptedMimeTypes": new Dropzone(Dropzone.createElement("""<form action="/"></form>"""), { clickable: yes, acceptedMimeTypes: "audio/*,video/*" })
+        "using acceptedFiles": new Dropzone(Dropzone.createElement(\
+          """<form action="/"></form>"""), { clickable: yes, acceptedFiles: "audio/*,video/*" })
+        "using acceptedMimeTypes": new Dropzone(\
+          Dropzone.createElement("""<form action="/"></form>"""),
+          { clickable: yes, acceptedMimeTypes: "audio/*,video/*" })
 
       it "should not add an accept attribute if no acceptParameter", ->
-        dropzone = new Dropzone (Dropzone.createElement """<form action="/"></form>"""), clickable: yes, acceptParameter: null, acceptedMimeTypes: null
+        dropzone = new Dropzone (Dropzone.createElement """<form action="/"></form>"""), \
+          clickable: yes, acceptParameter: null, acceptedMimeTypes: null
         dropzone.hiddenFileInput.hasAttribute("accept").should.be.false
-
 
       for name, dropzone of dropzones
         describe name, ->
@@ -534,7 +531,8 @@ describe "Dropzone", ->
 
     beforeEach ->
       element = Dropzone.createElement """<div></div>"""
-      dropzone = new Dropzone element, maxFilesize: 4, url: "url", acceptedMimeTypes: "audio/*,image/png", maxFiles: 3
+      dropzone = new Dropzone element, maxFilesize: 4, url: "url", acceptedMimeTypes: \
+        "audio/*,image/png", maxFiles: 3
 
     describe "file specific", ->
       file = null
@@ -630,7 +628,8 @@ describe "Dropzone", ->
 
       element = Dropzone.createElement """<div></div>"""
       document.body.appendChild element
-      dropzone = new Dropzone element, maxFilesize: 4, maxFiles: 100, url: "url", acceptedMimeTypes: "audio/*,image/png", uploadprogress: ->
+      dropzone = new Dropzone element, maxFilesize: 4, maxFiles: 100, url: "url", \
+        acceptedMimeTypes: "audio/*,image/png", uploadprogress: ->
     afterEach ->
       document.body.removeChild element
       dropzone.destroy()
@@ -642,7 +641,8 @@ describe "Dropzone", ->
         dropzone.accept { size: 2 * 1024 * 1024, type: "audio/mp3" }, (err) -> expect(err).to.be.undefined
 
       it "shouldn't pass if the filesize is too big", ->
-        dropzone.accept { size: 10 * 1024 * 1024, type: "audio/mp3" }, (err) -> err.should.eql "File is too big (10MiB). Max filesize: 4MiB."
+        dropzone.accept { size: 10 * 1024 * 1024, type: "audio/mp3" }, (err) -> err.should.eql \
+          "File is too big (10MiB). Max filesize: 4MiB."
 
       it "should properly accept files which mime types are listed in acceptedFiles", ->
 
@@ -651,7 +651,8 @@ describe "Dropzone", ->
         dropzone.accept { type: "audio/wav" }, (err) -> expect(err).to.be.undefined
 
       it "should properly reject files when the mime type isn't listed in acceptedFiles", ->
-        dropzone.accept { type: "image/jpeg" }, (err) -> err.should.eql "You can't upload files of this type."
+        dropzone.accept { type: "image/jpeg" }, (err) -> err.should.eql \
+          "You can't upload files of this type."
 
       it "should fail if maxFiles has been exceeded and call the event maxfilesexceeded", ->
         sinon.stub dropzone, "getAcceptedFiles"
@@ -1152,7 +1153,7 @@ describe "Dropzone", ->
         dropzone.getFilesWithStatus(Dropzone.ADDED).should.eql [ mock2 ]
         dropzone.getFilesWithStatus(Dropzone.UPLOADING).should.eql [ mock1 ]
         dropzone.getFilesWithStatus(Dropzone.QUEUED).should.eql [ mock3, mock4 ]
-        
+
 
 
 
@@ -1184,6 +1185,7 @@ describe "Dropzone", ->
         mockFile.status.should.eql Dropzone.ADDED
         doneFunction()
         mockFile.status.should.eql Dropzone.QUEUED
+        (f.name for f in dropzone.files).should.contain(mockFile.name)
 
         mockFile = getMockFile()
         dropzone.addFile mockFile
@@ -1234,7 +1236,6 @@ describe "Dropzone", ->
 
         dropzone.files[0].previewElement.querySelector("a[data-dz-remove].dz-remove").should.be.ok
 
-
       it "should attach an event handler to data-dz-remove links", ->
         dropzone.options.previewTemplate = """
                                             <div class="dz-preview dz-file-preview">
@@ -1274,7 +1275,23 @@ describe "Dropzone", ->
 
         dropzone.removeFile.callCount.should.eql 2
 
+      it "should remove a file with the same name", ->
+        doneFunction = null
 
+        dropzone.accept = (file, done) -> doneFunction = done
+        dropzone.processFile = ->
+        dropzone.uploadFile = ->
+
+        dropzone.addFile mockFile
+        doneFunction()
+        mockFile.status.should.eql Dropzone.QUEUED
+
+        mockFile2 = getMockFile()
+        dropzone.addFile mockFile2
+        doneFunction()
+
+        (f for f in dropzone.files when f.name == mockFile.name).length.should.eql 1
+        mockFile2.status.should.eql Dropzone.QUEUED
 
       describe "thumbnails", ->
         it "should properly queue the thumbnail creation", (done) ->
@@ -1300,7 +1317,7 @@ describe "Dropzone", ->
             ct_callback = callback
 
           sinon.spy dropzone, "createThumbnail"
-          
+
           dropzone.addFile mock1
           dropzone.addFile mock2
           dropzone.addFile mock3
@@ -1318,7 +1335,6 @@ describe "Dropzone", ->
 
             done()
           ), 10
-          
 
           # dropzone.addFile mock1
 
@@ -1449,14 +1465,14 @@ describe "Dropzone", ->
           requests[0].onload()
 
           mockFile.status.should.eql Dropzone.UPLOADING
-        
+
           requests[0].readyState = 4
           requests[0].onload()
 
           mockFile.status.should.eql Dropzone.SUCCESS
           done()
         , 10
-      
+
 
       it "should emit error and errormultiple when response was not OK", (done) ->
         dropzone.options.uploadMultiple = yes
@@ -1565,8 +1581,6 @@ describe "Dropzone", ->
           # formData.append.args[1][0].should.eql "myName[]"
           done()
         , 10
-
-
 
       describe "settings()", ->
         it "should correctly set `withCredentials` on the xhr object", ->

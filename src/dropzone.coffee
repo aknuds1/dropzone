@@ -889,6 +889,10 @@ class Dropzone extends Emitter
       @options.accept.call this, file, done
 
   addFile: (file) ->
+    matchingFile = (f for f in @files when f.name == file.name)[0]
+    if matchingFile?
+      @removeFile(matchingFile)
+
     file.upload =
       progress: 0
       # Setting the total upload size to file.size for the beginning
@@ -935,7 +939,7 @@ class Dropzone extends Emitter
     return if @_processingThumbnail or @_thumbnailQueue.length == 0
 
     @_processingThumbnail = yes
-    @createThumbnail @_thumbnailQueue.shift(), =>
+    @_createThumbnail @_thumbnailQueue.shift(), =>
       @_processingThumbnail = no
       @_processThumbnailQueue()
 
@@ -954,7 +958,7 @@ class Dropzone extends Emitter
       @removeFile file if file.status != Dropzone.UPLOADING || cancelIfNecessary
     return null
 
-  createThumbnail: (file, callback) ->
+  _createThumbnail: (file, callback) ->
 
     fileReader = new FileReader
 
@@ -1038,7 +1042,7 @@ class Dropzone extends Emitter
 
     @emit "processingmultiple", files if @options.uploadMultiple
 
-    @uploadFiles files
+    @_uploadFiles files
 
   _getFilesWithXhr: (xhr) -> files = (file for file in @files when file.xhr == xhr)
 
@@ -1066,10 +1070,7 @@ class Dropzone extends Emitter
       return option.apply(@, args)
     option
 
-  # Wrapper for uploadFiles()
-  uploadFile: (file) -> @uploadFiles [ file ]
-
-  uploadFiles: (files) ->
+  _uploadFiles: (files) ->
     if @options.uploadFiles?
       @options.uploadFiles(files)
       return
@@ -1090,7 +1091,8 @@ class Dropzone extends Emitter
 
     handleError = =>
       for file in files
-        @_errorProcessing files, response || @options.dictResponseError.replace("{{statusCode}}", xhr.status), xhr
+        @_errorProcessing files, response || @options.dictResponseError.replace("{{statusCode}}", \
+          xhr.status), xhr
 
     updateProgress = (e) =>
       if e?
@@ -1105,11 +1107,10 @@ class Dropzone extends Emitter
         # Called when the file finished uploading
 
         allFilesFinished = yes
-
         progress = 100
-
         for file in files
-          allFilesFinished = no unless file.upload.progress == 100 and file.upload.bytesSent == file.upload.total
+          allFilesFinished = no unless file.upload.progress == 100 and file.upload.bytesSent == \
+            file.upload.total
           file.upload.progress = progress
           file.upload.bytesSent = file.upload.total
 
@@ -1126,7 +1127,8 @@ class Dropzone extends Emitter
 
       response = xhr.responseText
 
-      if xhr.getResponseHeader("content-type") and ~xhr.getResponseHeader("content-type").indexOf "application/json"
+      if xhr.getResponseHeader("content-type") and ~xhr.getResponseHeader("content-type").indexOf \
+          "application/json"
         try
           response = JSON.parse response
         catch e
