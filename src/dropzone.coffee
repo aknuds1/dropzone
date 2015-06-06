@@ -537,8 +537,6 @@ class Dropzone extends Emitter
     # @options.url = @element.getAttribute "action" unless @options.url?
     @options.url = @element.getAttribute "action" unless @options.url?
 
-    throw new Error "No URL provided." unless @options.url
-
     throw new Error "You can't provide both 'acceptedFiles' and 'acceptedMimeTypes'. " +
       "'acceptedMimeTypes' is deprecated." if @options.acceptedFiles and @options.acceptedMimeTypes
 
@@ -1073,8 +1071,7 @@ class Dropzone extends Emitter
 
   _uploadFiles: (files) ->
     if @options.uploadFiles?
-      @options.uploadFiles(files)
-      return
+      return @options.uploadFiles(files)
 
     xhr = new XMLHttpRequest()
 
@@ -1188,6 +1185,8 @@ class Dropzone extends Emitter
     formData.append @_getParamName(i), files[i], files[i].name for i in [0..files.length-1]
 
     xhr.send formData
+
+    new Promise((resolve) -> resolve(files))
 
   # Called internally when processing is finished.
   # Individual callbacks have to be called in the appropriate sections.
