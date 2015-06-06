@@ -280,10 +280,12 @@ class Dropzone extends Emitter
     # The dimensions are going to be used like this:
     #
     #     var info = @options.resize.call(this, file);
-    #     ctx.drawImage(img, info.srcX, info.srcY, info.srcWidth, info.srcHeight, info.trgX, info.trgY, info.trgWidth, info.trgHeight);
+    #     ctx.drawImage(img, info.srcX, info.srcY, info.srcWidth, info.srcHeight, info.trgX,
+    #       info.trgY, info.trgWidth, info.trgHeight);
     #
     #  srcX, srcy, trgX and trgY can be omitted (in which case 0 is assumed).
-    #  trgWidth and trgHeight can be omitted (in which case the options.thumbnailWidth / options.thumbnailHeight are used)
+    #  trgWidth and trgHeight can be omitted (in which case the options.thumbnailWidth /
+    #  options.thumbnailHeight are used)
     resize: (file) ->
       info =
         srcX: 0
@@ -360,11 +362,14 @@ class Dropzone extends Emitter
         file.previewTemplate = file.previewElement # Backwards compatibility
 
         @previewsContainer.appendChild file.previewElement
-        node.textContent = file.name for node in file.previewElement.querySelectorAll("[data-dz-name]")
-        node.innerHTML = @filesize file.size for node in file.previewElement.querySelectorAll("[data-dz-size]")
+        node.textContent = file.name for node in \
+          file.previewElement.querySelectorAll("[data-dz-name]")
+        node.innerHTML = @filesize file.size for node in file.previewElement.querySelectorAll(
+          "[data-dz-size]")
 
         if @options.addRemoveLinks
-          file._removeLink = Dropzone.createElement """<a class="dz-remove" href="javascript:undefined;" data-dz-remove>#{@options.dictRemoveFile}</a>"""
+          file._removeLink = Dropzone.createElement \
+            """<a class="dz-remove" href="javascript:undefined;" data-dz-remove>#{@options.dictRemoveFile}</a>"""
           file.previewElement.appendChild file._removeLink
 
         removeFileEvent = (e) =>
@@ -378,7 +383,8 @@ class Dropzone extends Emitter
             else
               @removeFile file
 
-        removeLink.addEventListener "click", removeFileEvent for removeLink in file.previewElement.querySelectorAll("[data-dz-remove]")
+        removeLink.addEventListener "click", removeFileEvent for removeLink in \
+          file.previewElement.querySelectorAll("[data-dz-remove]")
 
     # Called whenever a file is removed.
     removedfile: (file) ->
@@ -402,7 +408,8 @@ class Dropzone extends Emitter
       if file.previewElement
         file.previewElement.classList.add "dz-error"
         message = message.error if typeof message != "String" and message.error
-        node.textContent = message for node in file.previewElement.querySelectorAll("[data-dz-errormessage]")
+        node.textContent = message for node in file.previewElement.querySelectorAll(
+          "[data-dz-errormessage]")
 
     errormultiple: noop
 
@@ -1289,7 +1296,8 @@ Dropzone.blacklistedBrowsers = [
 Dropzone.isBrowserSupported = ->
   capableBrowser = yes
 
-  if window.File and window.FileReader and window.FileList and window.Blob and window.FormData and document.querySelector
+  if window.File and window.FileReader and window.FileList and window.Blob and window.FormData and \
+      document.querySelector
     unless "classList" of document.createElement "a"
       capableBrowser = no
     else
@@ -1326,7 +1334,8 @@ Dropzone.getElement = (el, name) ->
     element = document.querySelector el
   else if el.nodeType?
     element = el
-  throw new Error "Invalid `#{name}` option provided. Please provide a CSS selector or a plain HTML element." unless element?
+  throw new Error "Invalid `#{name}` option provided. Please provide a CSS selector or a plain " +
+    "HTML element." unless element?
   return element
 
 Dropzone.getElements = (els, name) ->
@@ -1342,7 +1351,8 @@ Dropzone.getElements = (els, name) ->
   else if els.nodeType?
     elements = [ els ]
 
-  throw new Error "Invalid `#{name}` option provided. Please provide a CSS selector, a plain HTML element or a list of those." unless elements? and elements.length
+  throw new Error "Invalid `#{name}` option provided. Please provide a CSS selector, a plain " +
+    "HTML element or a list of those." unless elements? and elements.length
 
   return elements
 
@@ -1369,7 +1379,8 @@ Dropzone.isValidFile = (file, acceptedFiles) ->
   for validType in acceptedFiles
     validType = validType.trim()
     if validType.charAt(0) == "."
-      return yes if file.name.toLowerCase().indexOf(validType.toLowerCase(), file.name.length - validType.length) != -1
+      return yes if file.name.toLowerCase().indexOf(validType.toLowerCase(), file.name.length -
+        validType.length) != -1
     else if /\/\*$/.test validType
       # This is something like a image/* mime type
       return yes if baseMimeType == validType.replace /\/.*$/, ""
