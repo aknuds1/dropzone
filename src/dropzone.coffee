@@ -362,10 +362,13 @@ class Dropzone extends Emitter
         file.previewTemplate = file.previewElement # Backwards compatibility
 
         @previewsContainer.appendChild file.previewElement
-        node.textContent = file.name for node in \
-          file.previewElement.querySelectorAll("[data-dz-name]")
+        node.textContent = file.name for node in file.previewElement.querySelectorAll(
+          "[data-dz-name]")
         node.innerHTML = @filesize file.size for node in file.previewElement.querySelectorAll(
           "[data-dz-size]")
+
+        if file.status == Dropzone.EXISTING
+          file.previewElement.classList.add("dz-complete")
 
         if @options.addRemoveLinks
           file._removeLink = Dropzone.createElement \
@@ -624,7 +627,7 @@ class Dropzone extends Emitter
         document.body.appendChild @hiddenFileInput
         @hiddenFileInput.addEventListener "change", =>
           files = @hiddenFileInput.files
-          @addFile file for file in files if files.length
+          @_addFile file for file in files if files.length
           @emit "addedfiles", files
           setupHiddenFileInput()
       setupHiddenFileInput()
@@ -700,7 +703,6 @@ class Dropzone extends Emitter
                 Dropzone.elementInside evt.target, @element.querySelector ".dz-message")
               @hiddenFileInput.click() # Forward the click
 
-
     @enable()
 
     @options.init.call @
@@ -714,6 +716,15 @@ class Dropzone extends Emitter
       @hiddenFileInput = null
     delete @element.dropzone
     Dropzone.instances.splice Dropzone.instances.indexOf(this), 1
+
+  addExistingFiles: (files) ->
+    for file in files
+      file.status = Dropzone.EXISTING
+      file.accepted = true
+      @_addFile(file)
+    null
+
+  getExistingFiles: () -> @getFilesWithStatus(Dropzone.EXISTING)
 
   updateTotalUploadProgress: ->
     totalBytesSent = 0
@@ -834,7 +845,7 @@ class Dropzone extends Emitter
         # The browser supports dropping of folders, so handle items instead of files
         @_addFilesFromItems items
       else
-        @addFile file for file in files
+        @_addFile file for file in files
     return
 
   paste: (e) ->
@@ -851,13 +862,13 @@ class Dropzone extends Emitter
     for item in items
       if item.webkitGetAsEntry? and entry = item.webkitGetAsEntry()
         if entry.isFile
-          @addFile item.getAsFile()
+          @_addFile item.getAsFile()
         else if entry.isDirectory
           # Append all files from that directory to files
           @_addFilesFromDirectory entry, entry.name
       else if item.getAsFile?
         if !item.kind? or item.kind == "file"
-          @addFile item.getAsFile()
+          @_addFile item.getAsFile()
 
   # Goes through the directory, and adds each file it finds recursively
   _addFilesFromDirectory: (directory, path) ->
@@ -869,7 +880,7 @@ class Dropzone extends Emitter
           entry.file (file) =>
             return if @options.ignoreHiddenFiles and file.name.substring(0, 1) is '.'
             file.fullPath = "#{path}/#{file.name}"
-            @addFile file
+            @_addFile file
         else if entry.isDirectory
           @_addFilesFromDirectory entry, "#{path}/#{entry.name}"
       return
@@ -894,33 +905,33 @@ class Dropzone extends Emitter
     else
       @options.accept.call this, file, done
 
-  addFile: (file) ->
-    matchingFile = (f for f in @files when f.name == file.name)[0]
-    if matchingFile?
+  _addFile: (file) ->
+    matchingFiles = (f for f in @files when f.name == file.name)
+    for matchingFile in matchingFiles
       @removeFile(matchingFile)
 
-    file.upload =
-      progress: 0
-      # Setting the total upload size to file.size for the beginning
-      # It's actual different than the size to be transmitted.
-      total: file.size
-      bytesSent: 0
+    if file.status != Dropzone.EXISTING
+      file.upload =
+        progress: 0
+        # Setting the total upload size to file.size for the beginning
+        # It's actual different than the size to be transmitted.
+        total: file.size
+        bytesSent: 0
+      file.status = Dropzone.ADDED
+
     @files.push file
-
-    file.status = Dropzone.ADDED
-
     @emit "addedfile", file
-
     @_enqueueThumbnail file
 
-    @accept file, (error) =>
-      if error
-        file.accepted = false
-        @_errorProcessing [ file ], error # Will set the file.status
-      else
-        file.accepted = true
-        @enqueueFile file if @options.autoQueue # Will set .accepted = true
-      @_updateMaxFilesReachedClass()
+    if file.status != Dropzone.EXISTING
+      @accept file, (error) =>
+        if error
+          file.accepted = false
+          @_errorProcessing [ file ], error # Will set the file.status
+        else
+          file.accepted = true
+          @enqueueFile file if @options.autoQueue # Will set .accepted = true
+        @_updateMaxFilesReachedClass()
 
   # Wrapper for enqueueFile
   enqueueFiles: (files) -> @enqueueFile file for file in files; null
@@ -965,25 +976,28 @@ class Dropzone extends Emitter
     return null
 
   _createThumbnail: (file, callback) ->
+    if file.url?
+      @_createThumbnailFromUrl(file, file.url, callback)
+    else
+      fileReader = new FileReader
 
-    fileReader = new FileReader
+      fileReader.onload = =>
+        # Don't bother creating a thumbnail for SVG images since they're vector
+        if file.type == "image/svg+xml"
+          @emit "thumbnail", file, fileReader.result
+          callback() if callback?
+          return
 
-    fileReader.onload = =>
+        @_createThumbnailFromUrl file, fileReader.result, callback
 
-      # Don't bother creating a thumbnail for SVG images since they're vector
-      if file.type == "image/svg+xml"
-        @emit "thumbnail", file, fileReader.result
-        callback() if callback?
-        return
-
-      @_createThumbnailFromUrl file, fileReader.result, callback
-
-    fileReader.readAsDataURL file
+      fileReader.readAsDataURL file
 
   _createThumbnailFromUrl: (file, imageUrl, callback) ->
     # Not using `new Image` here because of a bug in latest Chrome versions.
     # See https://github.com/enyo/dropzone/pull/226
     img = document.createElement "img"
+    # Allow cross-origin images
+    img.crossOrigin = "Anonymous"
 
     img.onload = =>
       file.width = img.width
@@ -1000,9 +1014,10 @@ class Dropzone extends Emitter
       canvas.height = resizeInfo.trgHeight
 
       # This is a bugfix for iOS' scaling bug.
-      drawImageIOSFix ctx, img, resizeInfo.srcX ? 0, resizeInfo.srcY ? 0, resizeInfo.srcWidth, \
+      vertSquashRatio = detectVerticalSquash img
+      ctx.drawImage img, resizeInfo.srcX ? 0, resizeInfo.srcY ? 0, resizeInfo.srcWidth, \
         resizeInfo.srcHeight, resizeInfo.trgX ? 0, resizeInfo.trgY ? 0, resizeInfo.trgWidth, \
-        resizeInfo.trgHeight
+        resizeInfo.trgHeight / vertSquashRatio
 
       thumbnail = canvas.toDataURL "image/png"
 
@@ -1401,18 +1416,16 @@ else
 
 # Dropzone file status codes
 Dropzone.ADDED = "added"
-
 Dropzone.QUEUED = "queued"
-# For backwards compatibility. Now, if a file is accepted, it's either queued
-# or uploading.
-Dropzone.ACCEPTED = Dropzone.QUEUED
-
 Dropzone.UPLOADING = "uploading"
 Dropzone.PROCESSING = Dropzone.UPLOADING # alias
-
 Dropzone.CANCELED = "canceled"
 Dropzone.ERROR = "error"
 Dropzone.SUCCESS = "success"
+Dropzone.EXISTING = "existing"
+# For backwards compatibility. Now, if a file is accepted, it's either queued
+# or uploading.
+Dropzone.ACCEPTED = Dropzone.QUEUED
 
 ###
 
@@ -1449,12 +1462,6 @@ detectVerticalSquash = (img) ->
   ratio = (py / ih)
 
   if (ratio is 0) then 1 else ratio
-
-# A replacement for context.drawImage
-# (args are for source and destination).
-drawImageIOSFix = (ctx, img, sx, sy, sw, sh, dx, dy, dw, dh) ->
-  vertSquashRatio = detectVerticalSquash img
-  ctx.drawImage img, sx, sy, sw, sh, dx, dy, dw, dh / vertSquashRatio
 
 ###
 # contentloaded.js
