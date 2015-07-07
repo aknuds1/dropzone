@@ -37,7 +37,8 @@ class Emitter
     @_callbacks = @_callbacks || {}
     # Create namespace for this event
     @_callbacks[event] = [] unless @_callbacks[event]
-    @_callbacks[event].push fn
+    if fn?
+      @_callbacks[event].push fn
     return @
 
   emit: (event, args...) ->
@@ -45,7 +46,7 @@ class Emitter
     callbacks = @_callbacks[event]
 
     if callbacks
-      callback.apply @, args for callback in callbacks
+      callback?.apply @, args for callback in callbacks
 
     return @
 
@@ -118,6 +119,7 @@ class Dropzone extends Emitter
     "maxfilesexceeded"
     "maxfilesreached"
     "queuecomplete"
+    "debug"
   ]
 
   defaultOptions:
@@ -908,6 +910,7 @@ class Dropzone extends Emitter
   _addFile: (file) ->
     matchingFiles = (f for f in @files when f.name == file.name)
     for matchingFile in matchingFiles
+      @emit "debug", "Removing duplicate file '#{matchingFile.name}'"
       @removeFile(matchingFile)
 
     if file.status != Dropzone.EXISTING
