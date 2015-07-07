@@ -947,7 +947,7 @@ class Dropzone extends Emitter
   _thumbnailQueue: [ ]
   _processingThumbnail: no
   _enqueueThumbnail: (file) ->
-    if @options.createImageThumbnails and file.type.match(/image.*/) and file.size <= \
+    if @options.createImageThumbnails and file.type?.match(/image.*/) and file.size <= \
         @options.maxThumbnailFilesize * 1024 * 1024
       @_thumbnailQueue.push(file)
       setTimeout (=> @_processThumbnailQueue()), 0 # Deferring the call
