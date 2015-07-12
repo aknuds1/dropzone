@@ -1057,7 +1057,7 @@ class Dropzone extends Emitter
   processFile: (file) -> @processFiles [ file ]
 
   # Loads the file, then calls finishedLoading()
-  processFiles: (files) ->
+  processFiles: (files, uploadData) ->
     for file in files
       file.processing = yes # Backwards compatibility
       file.status = Dropzone.UPLOADING
@@ -1066,7 +1066,10 @@ class Dropzone extends Emitter
 
     @emit "processingmultiple", files if @options.uploadMultiple
 
-    @_uploadFiles files
+    if @options.uploadFiles?
+      @options.uploadFiles(files, uploadData)
+    else
+      @_uploadFiles files
 
   _getFilesWithXhr: (xhr) -> files = (file for file in @files when file.xhr == xhr)
 
@@ -1095,9 +1098,6 @@ class Dropzone extends Emitter
     option
 
   _uploadFiles: (files) ->
-    if @options.uploadFiles?
-      return @options.uploadFiles(files)
-
     xhr = new XMLHttpRequest()
 
     # Put the xhr object in the file objects to be able to reference it later.
