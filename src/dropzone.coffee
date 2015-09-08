@@ -364,7 +364,7 @@ class Dropzone extends Emitter
         file.previewTemplate = file.previewElement # Backwards compatibility
 
         @previewsContainer.appendChild file.previewElement
-        node.textContent = file.name for node in file.previewElement.querySelectorAll(
+        node.textContent = file.fullPath for node in file.previewElement.querySelectorAll(
           "[data-dz-name]")
         node.innerHTML = @filesize file.size for node in file.previewElement.querySelectorAll(
           "[data-dz-size]")
@@ -402,7 +402,7 @@ class Dropzone extends Emitter
       if file.previewElement
         file.previewElement.classList.remove "dz-file-preview"
         for thumbnailElement in file.previewElement.querySelectorAll("[data-dz-thumbnail]")
-          thumbnailElement.alt = file.name
+          thumbnailElement.alt = file.fullPath
           thumbnailElement.src = dataUrl
 
         setTimeout (=> file.previewElement.classList.add "dz-image-preview"), 1
@@ -881,8 +881,7 @@ class Dropzone extends Emitter
         if entry.isFile
           entry.file (file) =>
             return if @options.ignoreHiddenFiles and file.name.substring(0, 1) is '.'
-            file.fullPath = "#{path}/#{file.name}"
-            @_addFile file
+            @_addFile file, path
         else if entry.isDirectory
           @_addFilesFromDirectory entry, "#{path}/#{entry.name}"
       return
@@ -907,10 +906,13 @@ class Dropzone extends Emitter
     else
       @options.accept.call this, file, done
 
-  _addFile: (file) ->
-    matchingFiles = (f for f in @files when f.name == file.name)
+  _addFile: (file, path=null) ->
+    if !file.fullPath?
+      file.fullPath = if !S.isBlank(path) then "#{path}/#{file.name}" else file.name
+
+    matchingFiles = (f for f in @files when f.fullPath == file.fullPath)
     for matchingFile in matchingFiles
-      @emit "debug", "Removing duplicate file '#{matchingFile.name}'"
+      @emit "debug", "Removing duplicate file '#{matchingFile.fullPath}'"
       @removeFile(matchingFile)
 
     if file.status != Dropzone.EXISTING
@@ -1207,7 +1209,7 @@ class Dropzone extends Emitter
     # Finally add the file
     # Has to be last because some servers (eg: S3) expect the file to be the
     # last parameter
-    formData.append @_getParamName(i), files[i], files[i].name for i in [0..files.length-1]
+    formData.append @_getParamName(i), files[i], files[i].fullPath for i in [0..files.length-1]
 
     xhr.send formData
 
