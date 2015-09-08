@@ -867,13 +867,13 @@ class Dropzone extends Emitter
           @_addFile item.getAsFile()
         else if entry.isDirectory
           # Append all files from that directory to files
-          @_addFilesFromDirectory entry, entry.name
+          @_addFilesFromDirectory entry
       else if item.getAsFile?
         if !item.kind? or item.kind == "file"
           @_addFile item.getAsFile()
 
   # Goes through the directory, and adds each file it finds recursively
-  _addFilesFromDirectory: (directory, path) ->
+  _addFilesFromDirectory: (directory, path="") ->
     dirReader = directory.createReader()
 
     entriesReader = (entries) =>
@@ -883,7 +883,7 @@ class Dropzone extends Emitter
             return if @options.ignoreHiddenFiles and file.name.substring(0, 1) is '.'
             @_addFile file, path
         else if entry.isDirectory
-          @_addFilesFromDirectory entry, "#{path}/#{entry.name}"
+          @_addFilesFromDirectory entry, "#{path}#{entry.name}/"
       return
 
     dirReader.readEntries entriesReader, (error) -> console?.log? error
@@ -908,7 +908,7 @@ class Dropzone extends Emitter
 
   _addFile: (file, path=null) ->
     if !file.fullPath?
-      file.fullPath = if !S.isBlank(path) then "#{path}/#{file.name}" else file.name
+      file.fullPath = if !S.isBlank(path) then "#{path}#{file.name}" else file.name
 
     matchingFiles = (f for f in @files when f.fullPath == file.fullPath)
     for matchingFile in matchingFiles
