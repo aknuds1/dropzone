@@ -1,0 +1,14 @@
+---
+  globals:
+    Package: false
+    Npm: false
+  rules:
+    strict:
+      - 2
+      - "global"
+    comma-dangle:
+      - 2
+      - "always"
+    quotes:
+      - 2
+      - "single"

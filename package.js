@@ -1,8 +1,10 @@
+'use strict';
+
 Package.describe({
   summary: 'DropzoneJS.',
   version: '4.0.0',
   git: 'https://github.com/enyo/dropzone',
-  name: 'aknudsen:dropzone'
+  name: 'aknudsen:dropzone',
 });
 
 Package.onUse(function(api) {
