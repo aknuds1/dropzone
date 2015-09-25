@@ -662,6 +662,9 @@ class Dropzone extends Emitter
         # This needs to be deferred so that `queuecomplete` really triggers after `complete`
         setTimeout (=> @emit "queuecomplete"), 0
 
+    for event in ["addedfile", "addedfiles", "removedfile"]
+      @on(event, @_onFilesChanged)
+
     noPropagation = (e) ->
       e.stopPropagation()
       if e.preventDefault
@@ -736,6 +739,21 @@ class Dropzone extends Emitter
     null
 
   getExistingFiles: () -> @getFilesWithStatus(Dropzone.EXISTING)
+
+  _onFilesChanged: ->
+    haveFiles = @files.length > 0
+    if haveFiles
+      if !@removeFilesElement?
+        @removeFilesElement = Dropzone.createElement("""<div>
+  <a class="remove-all" href="#">Remove all</a>
+</div>""")
+        linkElement = @removeFilesElement.querySelector("a")
+        linkElement.onclick = () =>
+          @removeAllFiles(true)
+
+      @element.insertBefore(@removeFilesElement, @element.firstChild)
+    else if @removeFilesElement? and @element.firstChild == @removeFilesElement
+      @element.removeChild(@removeFilesElement)
 
   updateTotalUploadProgress: ->
     totalBytesSent = 0
