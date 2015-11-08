@@ -939,7 +939,8 @@ class Dropzone extends Emitter
 
   _addFile: (file, path=null) ->
     if !file.fullPath?
-      file.fullPath = if !S.isBlank(path) then "#{path}#{file.name}" else file.name
+      pathIsBlank = (path || "").trim().length == 0
+      file.fullPath = if !pathIsBlank then "#{path}#{file.name}" else file.name
 
     matchingFiles = (f for f in @files when f.fullPath == file.fullPath)
     for matchingFile in matchingFiles
